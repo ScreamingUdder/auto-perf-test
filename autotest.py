@@ -58,7 +58,7 @@ def main():
             else:
                 print('No new commits')
         print('sleeping')
-        time.sleep(10)
+        time.sleep(30)
         print('loop end')
 
 
