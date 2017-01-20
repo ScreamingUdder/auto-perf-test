@@ -1,0 +1,7 @@
+kazoo
+pexpect
+matplotlib
+numpy
+h5py
+requests
+gitpython

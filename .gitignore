@@ -1,0 +1,3 @@
+*.pyc
+.idea
+kafka_test_utils
