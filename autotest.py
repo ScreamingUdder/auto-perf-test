@@ -1,15 +1,17 @@
 from git import Repo, Git
 import time
 import requests
+import sys
+from slackclient import SlackClient
+from kafka_test_utils import KafkaSubprocess
 
 #TODO send data to broker once and set topic to clear data on size NOT on age!
 # Then don't need to run the producer every time the performance test is run
 
-#TODO accept path to mantid repo as input arg
-
-# report to slack? (create a new channel on mantidslack for it and invite Lamar)
-
 repo_path = '../mantid.git'
+build_path = 'mantid-build'
+slack_token = sys.argv[0]
+sc = SlackClient(slack_token)
 
 
 def checkout(sha):
@@ -21,12 +23,23 @@ def checkout(sha):
     repo.remotes.origin.pull()
 
 
+def report_to_slack(sha):
+    sc.api_call(
+        "chat.postMessage",
+        channel="#test_slackclient",
+        text="Built new commit: "+sha
+    )
+
+
 def build_new_commit(sha):
     checkout(sha)
-    #TODO now build Mantid
+    # Build Mantid
+    buildProcess = KafkaSubprocess('cmake -B'+build_path+' -H'+repo_path)
+    build_output = buildProcess.wait()
+    print build_output
     #TODO Run the performance test script
     #TODO Put results on webpage
-    #TODO Report to Slack
+    report_to_slack(sha)
 
 
 def main():

@@ -5,3 +5,4 @@ numpy
 h5py
 requests
 gitpython
+slackclient
