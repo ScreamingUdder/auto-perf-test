@@ -11,6 +11,7 @@ from kafka_test_utils import KafkaSubprocess
 repo_path = '../mantid.git'
 build_path = 'mantid-build'
 slack_token = sys.argv[0]
+github_token = sys.argv[1]
 sc = SlackClient(slack_token)
 
 
@@ -46,7 +47,7 @@ def main():
     while True:
         # Poll github API for new events
         r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/events',
-                         auth=('matthew-d-jones', 'd48ee8fe2e649d81c5839a64640eede7f15bef01'))
+                         auth=('matthew-d-jones', github_token))
         if r.status_code == 200:
             payload = r.json()
             for something in payload:
