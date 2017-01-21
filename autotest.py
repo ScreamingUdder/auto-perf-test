@@ -43,24 +43,35 @@ def build_new_commit(sha):
     report_to_slack(sha)
 
 
+
+def poll_github():
+    """Poll github for new commits, build Mantid and run perf test for latest commit"""
+    r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/events',
+                     auth=('matthew-d-jones', github_token))
+    if r.status_code == 200:
+        payload = r.json()
+        for something in payload:
+            # Find a push event and find the last commit made
+            if something['type'] == 'PushEvent':
+                sha = something['payload']['commits'][-1]['sha']
+                build_new_commit(sha)
+                break
+        else:
+            print('No new commits')
+
+
+def poll_slack():
+    """Poll slack for new messages to the bot"""
+    pass
+
+
 def main():
+    # Poll slack once every 2 seconds and github once every 30 seconds
     while True:
-        # Poll github API for new events
-        r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/events',
-                         auth=('matthew-d-jones', github_token))
-        if r.status_code == 200:
-            payload = r.json()
-            for something in payload:
-                # Find a push event and find the last commit made
-                if something['type'] == 'PushEvent':
-                    sha = something['payload']['commits'][-1]['sha']
-                    build_new_commit(sha)
-                    break
-            else:
-                print('No new commits')
-        print('sleeping')
-        time.sleep(30)
-        print('loop end')
+        for _ in range(15):
+            time.sleep(2)
+            poll_slack()
+        poll_github()
 
 
 if __name__ == "__main__":
