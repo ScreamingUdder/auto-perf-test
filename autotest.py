@@ -28,7 +28,7 @@ def report_to_slack(sha):
     sc.api_call(
         "chat.postMessage",
         channel="#test_slackclient",
-        text="Built new commit: "+sha
+        text="Built new commit: https://github.com/ScreamingUdder/mantid/commit/"+sha
     )
 
 
