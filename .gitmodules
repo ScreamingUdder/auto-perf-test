@@ -1,0 +1,3 @@
+[submodule "kafka-test-utils"]
+	path = kafka-test-utils
+	url = git@github.com:ScreamingUdder/kafka-test-utils.git
