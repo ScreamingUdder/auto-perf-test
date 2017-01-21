@@ -3,7 +3,7 @@ import time
 import requests
 import sys
 from slackclient import SlackClient
-from kafka-test-utils/kafka_test_utils import KafkaSubprocess
+from kafka_test_utils.utils import KafkaSubprocess
 
 # TODO send data to broker once and set topic to clear data on size NOT on age!
 # Then don't need to run the producer every time the performance test is run
@@ -71,7 +71,7 @@ def poll_slack():
 def handle_command(command, channel):
     """If command is valid then act on it, otherwise inform user"""
     response = "Not a recognised command"
-    if command.startswith('build'):
+    if command.startswith('test'):
         response = "Not yet implemented"
     sc.api_call("chat.postMessage", channel=channel,
                 text=response, as_user=True)
