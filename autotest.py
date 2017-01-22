@@ -3,7 +3,7 @@ import time
 import requests
 import sys
 from slackclient import SlackClient
-#from kafka_test_utils.utils import KafkaSubprocess
+import subprocess
 
 
 REPO_PATH = '../mantid.git'
@@ -13,7 +13,6 @@ BOT_ID = sys.argv[2]
 GITHUB_TOKEN = sys.argv[3]
 sc = SlackClient(SLACK_TOKEN)
 AT_BOT = "<@" + BOT_ID + ">"
-DEBUG = True
 
 
 def checkout(sha):
@@ -33,18 +32,28 @@ def report_to_slack(sha):
     )
 
 
-def build_new_commit(job_queue):
+def start_build_commit(job_queue):
+    """Returns handle to process doing build and logfile of stdout"""
     # Get first job in the queue
     sha = job_queue.pop(0)
-    if not DEBUG:
-        checkout(sha)
-        # Build Mantid
-        #buildProcess = KafkaSubprocess('cmake -B' + BUILD_PATH + ' -H' + REPO_PATH)
-        #build_output = buildProcess.wait()
-        #print build_output
-    # TODO Run the performance test script
-    # TODO Put results on webpage
-    report_to_slack(sha)
+    checkout(sha)
+    # Build Mantid
+    logfile = open('build_log', 'w+')
+    return subprocess.Popen(['cmake', '-B' + BUILD_PATH, '-H' + REPO_PATH], stdout=logfile), logfile
+
+
+def poll_for_process_end(process, logfile):
+    """Returns True if process ended"""
+    if process.poll() is not None:
+        logfile.close()
+        return True
+    return False
+
+
+def start_perf_test():
+    """Returns handle to process doing test and logfile of stdout"""
+    logfile = open('test_log', 'w+')
+    return subprocess.Popen([sys.executable, 'test.py'], stdout=logfile), logfile
 
 
 def commit_exists(sha):
