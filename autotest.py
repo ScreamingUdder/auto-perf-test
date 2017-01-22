@@ -3,14 +3,15 @@ import time
 import requests
 import sys
 from slackclient import SlackClient
-from kafka_test_utils.utils import KafkaSubprocess
+#from kafka_test_utils.utils import KafkaSubprocess
+
 
 REPO_PATH = '../mantid.git'
 BUILD_PATH = 'mantid-build'
-SLACK_TOKEN = sys.argv[0]
-GITHUB_TOKEN = sys.argv[2]
+SLACK_TOKEN = sys.argv[1]
+BOT_ID = sys.argv[2]
+GITHUB_TOKEN = sys.argv[3]
 sc = SlackClient(SLACK_TOKEN)
-BOT_ID = sys.argv[1]
 AT_BOT = "<@" + BOT_ID + ">"
 DEBUG = True
 
@@ -38,9 +39,9 @@ def build_new_commit(job_queue):
     if not DEBUG:
         checkout(sha)
         # Build Mantid
-        buildProcess = KafkaSubprocess('cmake -B' + BUILD_PATH + ' -H' + REPO_PATH)
-        build_output = buildProcess.wait()
-        print build_output
+        #buildProcess = KafkaSubprocess('cmake -B' + BUILD_PATH + ' -H' + REPO_PATH)
+        #build_output = buildProcess.wait()
+        #print build_output
     # TODO Run the performance test script
     # TODO Put results on webpage
     report_to_slack(sha)
@@ -94,12 +95,12 @@ def handle_command(command, channel, job_queue):
         else:
             response = "I couldn't find that commit"
     elif command.startswith('clear queue'):
-        job_queue = []
+        del job_queue[:]
         response = "Queue is cleared"
     elif command.startswith('show queue'):
-        response = "Queue: " + ",".join(job_queue)
+        response = "Queue: " + ", ".join(job_queue)
     elif command.startswith('help'):
-        response ="Commands: \"show queue\",\"clear queue\",\"test <COMMIT>\""
+        response = "Commands: \"show queue\",\"clear queue\",\"test <COMMIT>\""
     sc.api_call("chat.postMessage", channel=channel,
                 text=response, as_user=True)
 
