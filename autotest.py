@@ -23,11 +23,11 @@ def checkout(sha):
     g.checkout(sha)
 
 
-def report_to_slack(sha):
+def report_to_slack(message):
     sc.api_call(
         "chat.postMessage",
         channel="#test_slackclient",
-        text="Built new commit: https://github.com/ScreamingUdder/mantid/commit/" + sha
+        text=message
     )
 
 
@@ -53,6 +53,7 @@ def poll_for_process_end(process, logfile, status):
                 process, logfile, status = start_perf_test()
             else:
                 status = 'idle'
+                report_to_slack('Completed build and test')
     return process, logfile, status
 
 
@@ -103,7 +104,7 @@ def handle_command(command, channel, job_queue):
             if len(job_queue) > 0:
                 response = "Added job to queue"
             else:
-                response = "Executing build and test at commit " + sha
+                response = "Executing build and test at commit https://github.com/ScreamingUdder/mantid/commit/" + sha
             job_queue.append(sha)
         else:
             response = "I couldn't find that commit"
