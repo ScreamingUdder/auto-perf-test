@@ -134,6 +134,8 @@ def main():
     if sc.rtm_connect():
         status = 'idle'
         job_queue = []
+        process = None
+        logfile = None
         # Poll slack once every 2 seconds and github once every 30 seconds
         while True:
             if status == 'idle' and len(job_queue) > 0:
