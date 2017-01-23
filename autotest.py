@@ -1,18 +1,28 @@
 from git import Repo, Git
 import time
+import datetime
 import requests
 import sys
 from slackclient import SlackClient
 import subprocess
+from transferdata import TransferData
 
 REPO_PATH = '../mantid'
 BUILD_PATH = '../mantid-build'
 SLACK_TOKEN = sys.argv[1]
 BOT_ID = sys.argv[2]
 GITHUB_TOKEN = sys.argv[3]
+DROPBOX_TOKEN = sys.argv[4]
 sc = SlackClient(SLACK_TOKEN)
+transfer_data = TransferData(DROPBOX_TOKEN)
 AT_BOT = "<@" + BOT_ID + ">"
 ENABLE_BUILD_ON_PUSH = False
+
+
+class CurrentJob:
+    def __init__(self, sha):
+        self.sha = sha
+        self.output_directory = '/' + datetime.datetime.utcnow().isoformat() + '_' + sha[:7]
 
 
 def checkout(sha):
@@ -38,7 +48,7 @@ def start_build_commit(job_queue):
     checkout(sha)
     status = 'building'
     # Build Mantid
-    logfile = open('build_log', 'w+')
+    logfile = open('build_log.txt', 'w+')
     return subprocess.Popen(
         'cmake3 -DENABLE_MANTIDPLOT=OFF -DENABLE_OPENCASCADE=OFF -B' + BUILD_PATH + ' -H' + REPO_PATH + '; make -j8 -C ' + BUILD_PATH + ' Framework',
         stdout=logfile, shell=True), logfile, status, sha
@@ -50,18 +60,21 @@ def poll_for_process_end(process, logfile, status, current_job):
         if process.poll() is not None:
             logfile.close()
             if status == 'building':
+                transfer_data.upload_file('build_log.txt', current_job.output_directory + '/build_log.txt')
                 process, logfile, status = start_perf_test()
             else:
+                transfer_data.upload_file('test_log.txt', current_job.output_directory + '/test_log.txt')
                 status = 'idle'
                 report_to_slack(
-                    'Completed build and test for https://api.github.com/repos/ScreamingUdder/mantid/commits/' + current_job)
+                    'Completed build and test for https://api.github.com/repos/ScreamingUdder/mantid/commits/' +
+                    current_job.sha + '\nOutput logs are available in ' + current_job.output_directory)
     return process, logfile, status
 
 
 def start_perf_test():
     """Returns handle to process doing test and logfile of stdout"""
     status = 'testing'
-    logfile = open('test_log', 'w+')
+    logfile = open('test_log.txt', 'w+')
     return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', '--classic', 'test.py'], stdout=logfile), logfile, status
 
 
@@ -138,7 +151,7 @@ def main():
         job_queue = []
         process = None
         logfile = None
-        current_job = ''
+        current_job = CurrentJob('')
         # Poll slack once every 2 seconds and github once every 30 seconds
         while True:
             if status == 'idle' and len(job_queue) > 0:
