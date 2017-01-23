@@ -36,25 +36,31 @@ def start_build_commit(job_queue):
     # Get first job in the queue
     sha = job_queue.pop(0)
     checkout(sha)
+    status = 'building'
     # Build Mantid
     logfile = open('build_log', 'w+')
     return subprocess.Popen(
         'cmake3 -DENABLE_MANTIDPLOT=OFF -DENABLE_OPENCASCADE=OFF -B' + BUILD_PATH + ' -H' + REPO_PATH + '; make -j8 -C ' + BUILD_PATH + ' Framework',
-        stdout=logfile, shell=True), logfile
+        stdout=logfile, shell=True), logfile, status
 
 
-def poll_for_process_end(process, logfile):
+def poll_for_process_end(process, logfile, status):
     """Returns True if process ended"""
-    if process.poll() is not None:
-        logfile.close()
-        return True
-    return False
+    if status != 'idle':
+        if process.poll() is not None:
+            logfile.close()
+            if status == 'building':
+                process, logfile, status = start_perf_test()
+            else:
+                status = 'idle'
+    return process, logfile, status
 
 
 def start_perf_test():
     """Returns handle to process doing test and logfile of stdout"""
+    status = 'testing'
     logfile = open('test_log', 'w+')
-    return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', 'test.py'], stdout=logfile), logfile
+    return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', 'test.py'], stdout=logfile), logfile, status
 
 
 def commit_exists(sha):
@@ -126,9 +132,14 @@ def parse_slack_output(slack_rtm_output):
 
 def main():
     if sc.rtm_connect():
+        status = 'idle'
         job_queue = []
         # Poll slack once every 2 seconds and github once every 30 seconds
         while True:
+            if status == 'idle' and len(job_queue) > 0:
+                process, logfile, status = start_build_commit(job_queue)
+            else:
+                process, logfile, status = poll_for_process_end(process, logfile, status)
             for _ in range(15):
                 time.sleep(2)
                 poll_slack(job_queue)
