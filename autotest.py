@@ -158,7 +158,7 @@ def main():
         job_queue = []
         process = None
         logfile = None
-        enable_build_on_push = False
+        enable_build_on_push = True
         current_job = CurrentJob('')
         e_tag = ''  # to avoid getting unchanged data back from github
         e_tag = poll_github(job_queue, e_tag, initial_call=True)
