@@ -16,7 +16,6 @@ DROPBOX_TOKEN = sys.argv[4]
 sc = SlackClient(SLACK_TOKEN)
 transfer_data = TransferData(DROPBOX_TOKEN)
 AT_BOT = "<@" + BOT_ID + ">"
-ENABLE_BUILD_ON_PUSH = False
 
 
 class CurrentJob:
@@ -101,14 +100,15 @@ def poll_github(job_queue):
             print('No new commits')
 
 
-def poll_slack(job_queue):
+def poll_slack(job_queue, enable_build_on_push):
     """Poll slack for new messages to the bot"""
     command, channel = parse_slack_output(sc.rtm_read())
     if command and channel:
-        handle_command(command, channel, job_queue)
+        handle_command(command, channel, job_queue, enable_build_on_push)
+    return enable_build_on_push
 
 
-def handle_command(command, channel, job_queue):
+def handle_command(command, channel, job_queue, enable_build_on_push):
     """If command is valid then act on it, otherwise inform user"""
     response = "Not a recognised command"
     split_command = command.strip().split()
@@ -127,10 +127,15 @@ def handle_command(command, channel, job_queue):
         response = "Queue is cleared"
     elif command.startswith('show queue'):
         response = "Queue: " + ", ".join(job_queue)
+    elif command.startswith('enable build on git push'):
+        enable_build_on_push = True
+    elif command.startswith('disable build on git push'):
+        enable_build_on_push = False
     elif command.startswith('help'):
         response = "Commands: \"show queue\",\"clear queue\",\"test <COMMIT>\""
     sc.api_call("chat.postMessage", channel=channel,
                 text=response, as_user=True)
+    return enable_build_on_push
 
 
 def parse_slack_output(slack_rtm_output):
@@ -151,6 +156,7 @@ def main():
         job_queue = []
         process = None
         logfile = None
+        enable_build_on_push = False
         current_job = CurrentJob('')
         # Poll slack once every 2 seconds and github once every 30 seconds
         while True:
@@ -160,8 +166,8 @@ def main():
                 process, logfile, status = poll_for_process_end(process, logfile, status, current_job)
             for _ in range(15):
                 time.sleep(2)
-                poll_slack(job_queue)
-            if ENABLE_BUILD_ON_PUSH:
+                enable_build_on_push = poll_slack(job_queue, enable_build_on_push)
+            if enable_build_on_push:
                 poll_github(job_queue)
     else:
         print('Failed to connect to Slack bot, check token and bot ID')
