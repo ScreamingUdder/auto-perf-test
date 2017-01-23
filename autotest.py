@@ -27,7 +27,7 @@ def report_to_slack(message):
     sc.api_call(
         "chat.postMessage",
         channel="#test_slackclient",
-        text=message
+        text=message, as_user=True
     )
 
 
