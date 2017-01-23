@@ -21,7 +21,6 @@ def checkout(sha):
     assert not repo.bare
     repo.remotes.origin.fetch()
     g.checkout(sha)
-    repo.remotes.origin.pull()
 
 
 def report_to_slack(sha):
@@ -61,7 +60,7 @@ def start_perf_test():
     """Returns handle to process doing test and logfile of stdout"""
     status = 'testing'
     logfile = open('test_log', 'w+')
-    return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', 'test.py'], stdout=logfile), logfile, status
+    return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', '--classic', 'test.py'], stdout=logfile), logfile, status
 
 
 def commit_exists(sha):
