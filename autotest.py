@@ -41,10 +41,10 @@ def start_build_commit(job_queue):
     logfile = open('build_log', 'w+')
     return subprocess.Popen(
         'cmake3 -DENABLE_MANTIDPLOT=OFF -DENABLE_OPENCASCADE=OFF -B' + BUILD_PATH + ' -H' + REPO_PATH + '; make -j8 -C ' + BUILD_PATH + ' Framework',
-        stdout=logfile, shell=True), logfile, status
+        stdout=logfile, shell=True), logfile, status, sha
 
 
-def poll_for_process_end(process, logfile, status):
+def poll_for_process_end(process, logfile, status, current_job):
     """Returns True if process ended"""
     if status != 'idle':
         if process.poll() is not None:
@@ -53,7 +53,8 @@ def poll_for_process_end(process, logfile, status):
                 process, logfile, status = start_perf_test()
             else:
                 status = 'idle'
-                report_to_slack('Completed build and test')
+                report_to_slack(
+                    'Completed build and test for https://api.github.com/repos/ScreamingUdder/mantid/commits/' + current_job)
     return process, logfile, status
 
 
@@ -137,12 +138,13 @@ def main():
         job_queue = []
         process = None
         logfile = None
+        current_job = ''
         # Poll slack once every 2 seconds and github once every 30 seconds
         while True:
             if status == 'idle' and len(job_queue) > 0:
-                process, logfile, status = start_build_commit(job_queue)
+                process, logfile, status, current_job = start_build_commit(job_queue)
             else:
-                process, logfile, status = poll_for_process_end(process, logfile, status)
+                process, logfile, status = poll_for_process_end(process, logfile, status, current_job)
             for _ in range(15):
                 time.sleep(2)
                 poll_slack(job_queue)
