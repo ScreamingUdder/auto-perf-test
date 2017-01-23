@@ -84,11 +84,12 @@ def commit_exists(sha):
     return r.status_code == 200
 
 
-def poll_github(job_queue):
+def poll_github(job_queue, e_tag, initial_call=False):
     """Poll github for new commits, build Mantid and run perf test for latest commit"""
     r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/events',
+                     headers={'If-None-Match': e_tag},
                      auth=('matthew-d-jones', GITHUB_TOKEN))
-    if r.status_code == 200:
+    if r.status_code == 200 and not initial_call:
         payload = r.json()
         for something in payload:
             # Find a push event and find the last commit made
@@ -98,6 +99,7 @@ def poll_github(job_queue):
                 break
         else:
             print('No new commits')
+    return r.headers['ETag']
 
 
 def poll_slack(job_queue, enable_build_on_push):
@@ -158,6 +160,8 @@ def main():
         logfile = None
         enable_build_on_push = False
         current_job = CurrentJob('')
+        e_tag = ''  # to avoid getting unchanged data back from github
+        e_tag = poll_github(job_queue, e_tag, initial_call=True)
         # Poll slack once every 2 seconds and github once every 30 seconds
         while True:
             if status == 'idle' and len(job_queue) > 0:
@@ -168,7 +172,7 @@ def main():
                 time.sleep(2)
                 enable_build_on_push = poll_slack(job_queue, enable_build_on_push)
             if enable_build_on_push:
-                poll_github(job_queue)
+                e_tag = poll_github(job_queue, e_tag)
     else:
         print('Failed to connect to Slack bot, check token and bot ID')
 
