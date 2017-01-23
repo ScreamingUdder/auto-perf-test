@@ -12,6 +12,7 @@ BOT_ID = sys.argv[2]
 GITHUB_TOKEN = sys.argv[3]
 sc = SlackClient(SLACK_TOKEN)
 AT_BOT = "<@" + BOT_ID + ">"
+ENABLE_BUILD_ON_PUSH = False
 
 
 def checkout(sha):
@@ -145,7 +146,8 @@ def main():
             for _ in range(15):
                 time.sleep(2)
                 poll_slack(job_queue)
-            poll_github(job_queue)
+            if ENABLE_BUILD_ON_PUSH:
+                poll_github(job_queue)
     else:
         print('Failed to connect to Slack bot, check token and bot ID')
 
