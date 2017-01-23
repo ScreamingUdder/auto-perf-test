@@ -5,7 +5,7 @@ import sys
 from slackclient import SlackClient
 import subprocess
 
-REPO_PATH = '../mantid.git'
+REPO_PATH = '../mantid'
 BUILD_PATH = '../mantid-build'
 SLACK_TOKEN = sys.argv[1]
 BOT_ID = sys.argv[2]
