@@ -54,7 +54,7 @@ def poll_for_process_end(process, logfile):
 def start_perf_test():
     """Returns handle to process doing test and logfile of stdout"""
     logfile = open('test_log', 'w+')
-    return subprocess.Popen([sys.executable, 'test.py'], stdout=logfile), logfile
+    return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', 'test.py'], stdout=logfile), logfile
 
 
 def commit_exists(sha):
