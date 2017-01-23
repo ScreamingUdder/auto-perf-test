@@ -5,9 +5,8 @@ import sys
 from slackclient import SlackClient
 import subprocess
 
-
 REPO_PATH = '../mantid.git'
-BUILD_PATH = 'mantid-build'
+BUILD_PATH = '../mantid-build'
 SLACK_TOKEN = sys.argv[1]
 BOT_ID = sys.argv[2]
 GITHUB_TOKEN = sys.argv[3]
@@ -39,7 +38,9 @@ def start_build_commit(job_queue):
     checkout(sha)
     # Build Mantid
     logfile = open('build_log', 'w+')
-    return subprocess.Popen(['cmake', '-B' + BUILD_PATH, '-H' + REPO_PATH], stdout=logfile), logfile
+    return subprocess.Popen(
+        'cmake3 -DENABLE_MANTIDPLOT=OFF -DENABLE_OPENCASCADE=OFF -B' + BUILD_PATH + ' -H' + REPO_PATH + '; make -j8 -C ' + BUILD_PATH + ' Framework',
+        stdout=logfile, shell=True), logfile
 
 
 def poll_for_process_end(process, logfile):
@@ -58,7 +59,7 @@ def start_perf_test():
 
 def commit_exists(sha):
     """Check if a commit exists, return True if it does, otherwise False"""
-    r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/commits/'+sha,
+    r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/commits/' + sha,
                      auth=('matthew-d-jones', GITHUB_TOKEN))
     if r.status_code == 200:
         return True
@@ -99,7 +100,7 @@ def handle_command(command, channel, job_queue):
             if len(job_queue) > 0:
                 response = "Added job to queue"
             else:
-                response = "Executing build and test at commit "+sha
+                response = "Executing build and test at commit " + sha
             job_queue.append(sha)
         else:
             response = "I couldn't find that commit"
