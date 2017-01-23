@@ -61,10 +61,7 @@ def commit_exists(sha):
     """Check if a commit exists, return True if it does, otherwise False"""
     r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/commits/' + sha,
                      auth=('matthew-d-jones', GITHUB_TOKEN))
-    if r.status_code == 200:
-        return True
-    else:
-        return False
+    return r.status_code == 200
 
 
 def poll_github(job_queue):
