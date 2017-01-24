@@ -50,7 +50,7 @@ def start_build_commit(job_queue):
     logfile = open('build_log.txt', 'w+')
     return subprocess.Popen(
         'cmake3 -DENABLE_MANTIDPLOT=OFF -DENABLE_OPENCASCADE=OFF -B' + BUILD_PATH + ' -H' + REPO_PATH + '; make -j8 -C ' + BUILD_PATH + ' Framework',
-        stdout=logfile, shell=True), logfile, status, sha
+        stdout=logfile, shell=True), logfile, status, CurrentJob(sha)
 
 
 def poll_for_process_end(process, logfile, status, current_job):
