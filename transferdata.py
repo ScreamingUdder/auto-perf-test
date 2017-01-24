@@ -13,4 +13,5 @@ class TransferData:
             self.dbx.files_upload(f.read(), file_to)
 
     def get_link(self, location):
-        return self.dbx.sharing_create_shared_link_with_settings(location)
+        link = self.dbx.sharing_create_shared_link_with_settings(location)
+        return link.url
