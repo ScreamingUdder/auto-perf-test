@@ -3,9 +3,11 @@ import time
 import datetime
 import requests
 import sys
+import os
 from slackclient import SlackClient
 import subprocess
 from transferdata import TransferData
+import shutil
 
 REPO_PATH = '../mantid'
 BUILD_PATH = '../mantid-build'
@@ -51,6 +53,19 @@ def start_build_commit(job_queue):
     return subprocess.Popen(
         'cmake3 -DENABLE_MANTIDPLOT=OFF -DENABLE_OPENCASCADE=OFF -B' + BUILD_PATH + ' -H' + REPO_PATH + '; make -j8 -C ' + BUILD_PATH + ' Framework',
         stdout=logfile, shell=True), logfile, status, CurrentJob(sha)
+
+
+def clear_build_directory():
+    """Remove all contents of the build directory (to do clean build)"""
+    for the_file in os.listdir(BUILD_PATH):
+        file_path = os.path.join(BUILD_PATH, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print(e)
 
 
 def poll_for_process_end(process, logfile, status, current_job):
@@ -132,14 +147,20 @@ def handle_command(command, channel, job_queue, enable_build_on_push):
         response = "Queue: " + ", ".join(job_queue)
     elif command.startswith('enable build on git push'):
         enable_build_on_push = True
+        response = "The last commit in each push to github will be built and tested"
     elif command.startswith('disable build on git push'):
         enable_build_on_push = False
+        response = "Disabled building on push to github"
+    elif command.startswith('clear build directory'):
+        clear_build_directory()
+        response = "The build directory has been cleared, ready for a clean build"
     elif command.startswith('help'):
         response = 'Commands:\n' + '\"\n\"'.join(['show queue',
                                                   'clear queue',
                                                   'test <COMMIT>',
                                                   'enable build on git push',
                                                   'disable build on git push',
+                                                  'clear build directory',
                                                   'help']) + '\"'
     sc.api_call("chat.postMessage", channel=channel,
                 text=response, as_user=True)
