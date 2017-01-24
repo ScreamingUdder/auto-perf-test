@@ -66,7 +66,8 @@ def poll_for_process_end(process, logfile, status, current_job):
                 status = 'idle'
                 report_to_slack(
                     'Completed build and test for https://api.github.com/repos/ScreamingUdder/mantid/commits/' +
-                    current_job.sha + '\nOutput logs are available in ' + current_job.output_directory)
+                    current_job.sha + '\nOutput files are available here: ' + transfer_data.get_link(
+                        current_job.output_directory))
     return process, logfile, status
 
 
