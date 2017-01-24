@@ -155,13 +155,13 @@ def handle_command(command, channel, job_queue, enable_build_on_push):
         clear_build_directory()
         response = "The build directory has been cleared, ready for a clean build"
     elif command.startswith('help'):
-        response = 'Commands:\n' + '\"\n\"'.join(['show queue',
-                                                  'clear queue',
-                                                  'test <COMMIT>',
-                                                  'enable build on git push',
-                                                  'disable build on git push',
-                                                  'clear build directory',
-                                                  'help']) + '\"'
+        response = 'Commands:\n\"' + '\"\n\"'.join(['show queue',
+                                                    'clear queue',
+                                                    'test <COMMIT>',
+                                                    'enable build on git push',
+                                                    'disable build on git push',
+                                                    'clear build directory',
+                                                    'help']) + '\"'
     sc.api_call("chat.postMessage", channel=channel,
                 text=response, as_user=True)
     return enable_build_on_push
