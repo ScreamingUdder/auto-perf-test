@@ -1,3 +1,3 @@
 [submodule "kafka_test_utils"]
 	path = kafka_test_utils
-	url = git@github.com:ScreamingUdder/kafka_test_utils.git
+	url = git@github.com:ess-dmsc/python-test-utilities.git
