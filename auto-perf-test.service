@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/XXXX/auto-perf-test/
-Type=forking
+Type=simple
 Environment=SLACK_TOKEN=XXXX BOT_ID=XXXX GITHUB_TOKEN=XXXX DROPBOX_TOKEN=XXXX MANTID_SRC_PATH=/XXX/mantid MANTID_BUILD_PATH=/XXX/mantid_build
 ExecStart=/usr/bin/python autotest.py
 Restart=on-abort
