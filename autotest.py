@@ -8,6 +8,7 @@ from slackclient import SlackClient
 import subprocess
 from transferdata import TransferData
 import shutil
+import websocket
 
 REPO_PATH = '../mantid'
 BUILD_PATH = '../mantid-build'
@@ -120,9 +121,13 @@ def poll_github(job_queue, e_tag, initial_call=False):
 
 def poll_slack(job_queue, enable_build_on_push):
     """Poll slack for new messages to the bot"""
-    command, channel = parse_slack_output(sc.rtm_read())
-    if command and channel:
-        handle_command(command, channel, job_queue, enable_build_on_push)
+    try:
+        for message in sc.rtm_read():
+            command, channel = parse_slack_output(message)
+            if command and channel:
+                handle_command(command, channel, job_queue, enable_build_on_push)
+    except websocket._exceptions.WebSocketConnectionClosedException:
+        sc.rtm_connect()
     return enable_build_on_push
 
 
