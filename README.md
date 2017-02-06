@@ -9,4 +9,4 @@ To use this:
   - Put `auto-perf-test.service` in your systemd directory, usually ``/etc/systemd/system`
   - Enable the service to start at boot with `systemctl enable auto-perf-test`
   - Start the service with `systemctl start auto-perf-test`
-- To launch manually you can edit then run `run_autotest.sh`
+- Alternatively, to launch manually you can edit then run `run_autotest.sh`
