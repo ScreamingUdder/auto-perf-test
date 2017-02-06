@@ -1,0 +1,14 @@
+[Unit]
+Description=Automated performance test of Mantid's Kafka Live Listener
+After=network.target
+
+[Service]
+WorkingDirectory=/etc/auto-perf-test/
+Type=forking
+Environment=SLACK_TOKEN=XXXX BOT_ID=XXXX GITHUB_TOKEN=XXXX DROPBOX_TOKEN=XXXX MANTID_SRC_PATH=/XXX/mantid MANTID_BUILD_PATH=/XXX/mantid_build
+ExecStart=/usr/bin/python autotest.py
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+

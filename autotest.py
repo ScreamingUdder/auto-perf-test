@@ -10,12 +10,12 @@ from transferdata import TransferData
 import shutil
 import websocket
 
-REPO_PATH = '../mantid'
-BUILD_PATH = '../mantid-build'
-SLACK_TOKEN = sys.argv[1]
-BOT_ID = sys.argv[2]
-GITHUB_TOKEN = sys.argv[3]
-DROPBOX_TOKEN = sys.argv[4]
+REPO_PATH = os.environ['MANTID_SRC_PATH']
+BUILD_PATH = os.environ['MANTID_BUILD_PATH']
+SLACK_TOKEN = os.environ['SLACK_TOKEN']
+BOT_ID = os.environ['BOT_ID']
+GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
+DROPBOX_TOKEN = os.environ['DROPBOX_TOKEN']
 sc = SlackClient(SLACK_TOKEN)
 transfer_data = TransferData(DROPBOX_TOKEN)
 AT_BOT = "<@" + BOT_ID + ">"

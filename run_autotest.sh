@@ -1,0 +1,8 @@
+SLACK_TOKEN="XXXX"
+BOT_ID="XXXX"
+GITHUB_TOKEN="XXXX"
+DROPBOX_TOKEN="XXXX"
+MANTID_SRC_PATH="/XXX/mantid"
+MANTID_BUILD_PATH="/XXX/mantid_build"
+python autotest.py
+
