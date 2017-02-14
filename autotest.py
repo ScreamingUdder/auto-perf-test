@@ -99,7 +99,7 @@ def start_perf_test():
     my_env = os.environ.copy()
     my_env["MPLBACKEND"] = "Agg"
     return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', '--classic', 'mantidperftest.py'],
-                            stdout=logfile, stderr=subprocess.STDOUT), logfile, status
+                            stdout=logfile, stderr=subprocess.STDOUT, env=my_env), logfile, status
 
 
 def commit_exists(sha):
