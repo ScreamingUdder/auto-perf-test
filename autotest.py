@@ -95,6 +95,9 @@ def start_perf_test():
     """Returns handle to process doing test and logfile of stdout and stderr"""
     status = 'testing'
     logfile = open('test_log.txt', 'w+')
+    # Use Agg backend to avoid problems with no display on server
+    my_env = os.environ.copy()
+    my_env["MPLBACKEND"] = "Agg"
     return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', '--classic', 'mantidperftest.py'],
                             stdout=logfile, stderr=subprocess.STDOUT), logfile, status
 

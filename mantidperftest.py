@@ -3,9 +3,6 @@ from kafka_test_utils.utils import jmxtool
 import time
 import pylab as pl
 import mantid.api as api
-import matplotlib
-
-matplotlib.use('Agg')
 
 
 class MantidKafkaPerfTest:
