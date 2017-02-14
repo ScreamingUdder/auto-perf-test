@@ -79,6 +79,8 @@ def poll_for_process_end(process, logfile, status, current_job):
                 process, logfile, status = start_perf_test()
             else:
                 transfer_data.upload_file('test_log.txt', current_job.output_directory + '/test_log.txt')
+                transfer_data.upload_file('mantid_bytes_out_vs_time.svg',
+                                          current_job.output_directory + '/mantid_bytes_out_vs_time.svg')
                 status = 'idle'
                 report_to_slack(
                     'Completed build and test for https://api.github.com/repos/ScreamingUdder/mantid/commits/' +
@@ -91,7 +93,8 @@ def start_perf_test():
     """Returns handle to process doing test and logfile of stdout"""
     status = 'testing'
     logfile = open('test_log.txt', 'w+')
-    return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', '--classic', 'test.py'], stdout=logfile), logfile, status
+    return subprocess.Popen([BUILD_PATH + '/bin/mantidpython', '--classic', 'mantidperftest.py'],
+                            stdout=logfile), logfile, status
 
 
 def commit_exists(sha):
