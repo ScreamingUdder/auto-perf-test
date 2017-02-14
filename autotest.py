@@ -79,8 +79,10 @@ def poll_for_process_end(process, logfile, status, current_job):
                 process, logfile, status = start_perf_test()
             else:
                 transfer_data.upload_file('test_log.txt', current_job.output_directory + '/test_log.txt')
-                transfer_data.upload_file('mantid_bytes_out_vs_time.svg',
-                                          current_job.output_directory + '/mantid_bytes_out_vs_time.svg')
+                plot_filename = 'mantid_bytes_out_vs_time.svg'
+                if os.path.isfile(plot_filename):
+                    transfer_data.upload_file(plot_filename,
+                                              current_job.output_directory + '/' + plot_filename)
                 status = 'idle'
                 report_to_slack(
                     'Completed build and test for https://api.github.com/repos/ScreamingUdder/mantid/commits/' +
