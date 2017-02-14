@@ -3,6 +3,7 @@ from kafka_test_utils.utils import jmxtool
 import time
 import pylab as pl
 import mantid.api as api
+import time
 
 
 class MantidKafkaPerfTest:
@@ -28,6 +29,8 @@ class MantidKafkaPerfTest:
 
     def run(self):
         self._start_kafka_monitor()
+        # Give the monitor a couple of seconds to start logging
+        time.sleep(2)
         self._start_live()
         self._wait_live()
         self._plot_kafka_metrics()
