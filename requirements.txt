@@ -8,3 +8,4 @@ gitpython
 slackclient
 dropbox
 websocket
+python-vagrant
