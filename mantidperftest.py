@@ -27,8 +27,8 @@ class MantidKafkaPerfTest:
         self.outputWs = output_workspace
 
     def run(self):
-        self._start_live()
         self._start_kafka_monitor()
+        self._start_live()
         self._wait_live()
         self._plot_kafka_metrics()
 
@@ -45,7 +45,8 @@ class MantidKafkaPerfTest:
         self._monitorLiveDataHandle = api.AlgorithmManagerImpl.Instance().newestInstanceOf("MonitorLiveData")
 
     def _start_kafka_monitor(self):
-        self.jmxmonitor = jmxtool.JmxTool(host=self.jmxhost, topic=self.instrumentName + "_events")
+        self.jmxmonitor = jmxtool.JmxTool(host=self.jmxhost, topic=self.instrumentName + "_events",
+                                          interval_milliseconds=500)
 
     def _wait_live(self):
         while self._monitorLiveDataHandle.isRunning():
