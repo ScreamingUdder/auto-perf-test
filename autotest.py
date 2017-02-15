@@ -75,20 +75,31 @@ def poll_for_process_end(process, logfile, status, current_job):
         if process.poll() is not None:
             logfile.close()
             if status == 'building':
-                transfer_data.upload_file('build_log.txt', current_job.output_directory + '/build_log.txt')
+                upload('build_log.txt', current_job.output_directory)
                 process, logfile, status = start_perf_test()
             else:
-                transfer_data.upload_file('test_log.txt', current_job.output_directory + '/test_log.txt')
-                plot_filename = 'mantid_bytes_out_vs_time.svg'
-                if os.path.isfile(plot_filename):
-                    transfer_data.upload_file(plot_filename,
-                                              current_job.output_directory + '/' + plot_filename)
+                upload('test_log.txt', current_job.output_directory)
+                upload_all_svg(current_job.output_directory)
                 status = 'idle'
                 report_to_slack(
                     'Completed build and test for https://api.github.com/repos/ScreamingUdder/mantid/commits/' +
                     current_job.sha + '\nOutput files are available here: ' + transfer_data.get_link(
                         current_job.output_directory))
     return process, logfile, status
+
+
+def upload_all_svg(output_dir):
+    """Upload all files with svg extension from current directory"""
+    files = [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith('.svg')]
+    for f in files:
+        upload(f, output_dir)
+
+
+def upload(plot_filename, output_dir):
+    """If file exists then try to upload it to Dropbox"""
+    if os.path.isfile(plot_filename):
+        transfer_data.upload_file(plot_filename,
+                                  output_dir + '/' + plot_filename)
 
 
 def start_perf_test():
