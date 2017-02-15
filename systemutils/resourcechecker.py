@@ -79,3 +79,4 @@ if __name__ == "__main__":
     print "cpu_cores="+str(output[0])+"%", "total memory="+str(output[1])+"GB"
     import pylab
     pylab.show()
+    
