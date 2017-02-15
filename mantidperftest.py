@@ -4,6 +4,7 @@ import time
 import pylab as pl
 import mantid.api as api
 import time
+from systemutils import resourcechecker
 
 
 class MantidKafkaPerfTest:
@@ -26,14 +27,17 @@ class MantidKafkaPerfTest:
         self._monitorLiveDataHandle = None
         self.jmxmonitor = None
         self.outputWs = output_workspace
+        self._res_check = resourcechecker.ResourceChecker()
 
     def run(self):
         self._start_kafka_monitor()
+        self._res_check.start()
         # Give the monitor a couple of seconds to start logging
         time.sleep(2)
         self._start_live()
         self._wait_live()
         self._plot_kafka_metrics()
+        self._plot_system_metrics()
 
     def _start_live(self):
         """
@@ -55,11 +59,16 @@ class MantidKafkaPerfTest:
         while self._monitorLiveDataHandle.isRunning():
             time.sleep(1)
 
+    def _plot_system_metrics(self):
+        cpu_cores, total_memory, mem_figure, cpu_figure = self._res_check.get_output()
+        print "Logical Cores = "+str(cpu_cores)+"| "+"Total Memory = "+str(total_memory)
+        mem_figure.savefig("mantid_memory_consumption.svg")
+        cpu_figure.savefig("mantid_cpu_usage.svg")
+        
     def _plot_kafka_metrics(self):
         results, plot_figure = self.jmxmonitor.get_output()
         print results
         plot_figure.savefig("mantid_bytes_out_vs_time.svg")
-
 
 if __name__ == "__main__":
     perftest = MantidKafkaPerfTest(instrument_name="lm")
