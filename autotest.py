@@ -90,10 +90,11 @@ def poll_for_process_end(process, logfile, status, current_job):
 
 
 def upload_all_svg(output_dir):
-    """Upload all files with svg extension from current directory"""
+    """Upload all files with svg extension from current directory, then delete local copy"""
     files = [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith('.svg')]
     for f in files:
         upload(f, output_dir)
+        os.remove(f)
 
 
 def upload(plot_filename, output_dir):
@@ -139,19 +140,19 @@ def poll_github(job_queue, e_tag, initial_call=False):
     return r.headers['ETag']
 
 
-def poll_slack(job_queue, enable_build_on_push):
+def poll_slack(job_queue, enable_build_on_push, status):
     """Poll slack for new messages to the bot"""
     try:
         message = sc.rtm_read()
         command, channel = parse_slack_output(message)
         if command and channel:
-            handle_command(command, channel, job_queue, enable_build_on_push)
+            handle_command(command, channel, job_queue, enable_build_on_push, status)
     except websocket._exceptions.WebSocketConnectionClosedException:
         sc.rtm_connect()
     return enable_build_on_push
 
 
-def handle_command(command, channel, job_queue, enable_build_on_push):
+def handle_command(command, channel, job_queue, enable_build_on_push, status):
     """If command is valid then act on it, otherwise inform user"""
     response = "Not a recognised command"
     split_command = command.strip().split()
@@ -179,6 +180,8 @@ def handle_command(command, channel, job_queue, enable_build_on_push):
     elif command.startswith('clear build directory'):
         clear_build_directory()
         response = "The build directory has been cleared, ready for a clean build"
+    elif command.startswith('show status'):
+        response = 'Status: ' + status
     elif command.startswith('help'):
         response = 'Commands:\n\"' + '\"\n\"'.join(['show queue',
                                                     'clear queue',
@@ -186,6 +189,7 @@ def handle_command(command, channel, job_queue, enable_build_on_push):
                                                     'enable build on git push',
                                                     'disable build on git push',
                                                     'clear build directory',
+                                                    'show status',
                                                     'help']) + '\"'
     sc.api_call("chat.postMessage", channel=channel,
                 text=response, as_user=True)
@@ -222,7 +226,7 @@ def main():
                 process, logfile, status = poll_for_process_end(process, logfile, status, current_job)
             for _ in range(15):
                 time.sleep(2)
-                enable_build_on_push = poll_slack(job_queue, enable_build_on_push)
+                enable_build_on_push = poll_slack(job_queue, enable_build_on_push, status)
             if enable_build_on_push:
                 e_tag = poll_github(job_queue, e_tag)
     else:
