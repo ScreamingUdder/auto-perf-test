@@ -90,18 +90,18 @@ def poll_for_process_end(process, logfile, status, current_job):
 
 
 def upload_all_svg(output_dir):
-    """Upload all files with svg extension from current directory, then delete local copy"""
+    """Upload all files with svg extension from current directory"""
     files = [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith('.svg')]
     for f in files:
         upload(f, output_dir)
-        os.remove(f)
 
 
-def upload(plot_filename, output_dir):
-    """If file exists then try to upload it to Dropbox"""
-    if os.path.isfile(plot_filename):
-        transfer_data.upload_file(plot_filename,
-                                  output_dir + '/' + plot_filename)
+def upload(filename, output_dir):
+    """If file exists then try to upload it to Dropbox then delete it"""
+    if os.path.isfile(filename):
+        transfer_data.upload_file(filename,
+                                  output_dir + '/' + filename)
+        os.remove(filename)
 
 
 def start_perf_test():
