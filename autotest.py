@@ -49,6 +49,7 @@ def start_build_commit(job_queue):
     sha = job_queue.pop(0)
     checkout(sha)
     status = 'building'
+    report_to_slack('Starting build at commit ' + sha)
     # Build Mantid
     logfile = open('build_log.txt', 'w+')
     return subprocess.Popen(
@@ -160,7 +161,7 @@ def handle_command(command, channel, job_queue, enable_build_on_push):
             if len(job_queue) > 0:
                 response = "Added job to queue"
             else:
-                response = "Executing build and test at commit https://github.com/ScreamingUdder/mantid/commit/" + sha
+                response = "Queued build and test at commit https://github.com/ScreamingUdder/mantid/commit/" + sha
             job_queue.append(sha)
         else:
             response = "I couldn't find that commit"
