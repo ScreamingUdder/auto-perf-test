@@ -9,6 +9,7 @@ import subprocess
 from transferdata import TransferData
 import shutil
 import websocket
+from githubpoller import GithubPoller
 
 REPO_PATH = os.environ['MANTID_SRC_PATH']
 BUILD_PATH = os.environ['MANTID_BUILD_PATH']
@@ -122,24 +123,6 @@ def commit_exists(sha):
     return r.status_code == 200
 
 
-def poll_github(job_queue, e_tag, initial_call=False):
-    """Poll github for new commits, build Mantid and run perf test for latest commit"""
-    r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/events',
-                     headers={'If-None-Match': e_tag},
-                     auth=('matthew-d-jones', GITHUB_TOKEN))
-    if r.status_code == 200 and not initial_call:
-        payload = r.json()
-        for something in payload:
-            # Find a push event and find the last commit made
-            if something['type'] == 'PushEvent':
-                sha = something['payload']['commits'][-1]['sha']
-                job_queue.append(sha)
-                break
-        else:
-            print('No new commits')
-    return r.headers['ETag']
-
-
 def poll_slack(job_queue, enable_build_on_push, status):
     """Poll slack for new messages to the bot"""
     try:
@@ -210,14 +193,13 @@ def parse_slack_output(slack_rtm_output):
 
 def main():
     if sc.rtm_connect():
+        gp = GithubPoller(GITHUB_TOKEN)
         status = 'idle'
         job_queue = []
         process = None
         logfile = None
         enable_build_on_push = True
         current_job = CurrentJob('')
-        e_tag = ''  # to avoid getting unchanged data back from github
-        e_tag = poll_github(job_queue, e_tag, initial_call=True)
         # Poll slack once every 2 seconds and github once every 30 seconds
         while True:
             if status == 'idle' and len(job_queue) > 0:
@@ -228,7 +210,7 @@ def main():
                 time.sleep(2)
                 enable_build_on_push = poll_slack(job_queue, enable_build_on_push, status)
             if enable_build_on_push:
-                e_tag = poll_github(job_queue, e_tag)
+                gp.poll(job_queue)
     else:
         print('Failed to connect to Slack bot, check token and bot ID')
 
