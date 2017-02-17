@@ -13,11 +13,17 @@ class GithubPoller:
         r = self._request_events()
         if r.status_code == 200:
             payload = r.json()
-            for something in payload:
+            for event in payload:
                 # Find a push event and find the last commit made
-                if something['type'] == 'PushEvent':
-                    sha = something['payload']['commits'][-1]['sha']
+                if event['type'] == 'PushEvent':
+                    sha = event['payload']['commits'][-1]['sha']
                     job_queue.append(sha)
+                    break
+                elif event['type'] == 'CreateEvent':
+                    if event['payload']['ref_type'] == 'branch':
+                        branch = event['payload']['ref']
+                        sha = self._get_last_commit_on_branch(branch)
+                        job_queue.append(sha)
                     break
             else:
                 print('No new commits')
@@ -28,3 +34,13 @@ class GithubPoller:
                          auth=('matthew-d-jones', self.github_token))
         self.e_tag = r.headers['ETag']
         return r
+
+    def _request_branch_info(self, branch):
+        r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/branches/' + branch,
+                         auth=('matthew-d-jones', self.github_token))
+        return r
+
+    def _get_last_commit_on_branch(self, branch):
+        r = self._request_branch_info(branch)
+        payload = r.json()
+        return payload['commit']['sha']
