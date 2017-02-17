@@ -4,6 +4,7 @@ import requests
 class GithubPoller:
     def __init__(self, github_token):
         self.github_token = github_token
+        self.id_of_last_event_handled = ''
         # Use etag to avoid getting unchanged data back from github each poll
         self.e_tag = ''
         self._request_events()
@@ -16,14 +17,18 @@ class GithubPoller:
             for event in payload:
                 # Find a push event and find the last commit made
                 if event['type'] == 'PushEvent':
-                    sha = event['payload']['head']
-                    job_queue.append(sha)
+                    if event['id'] != self.id_of_last_event_handled:
+                        sha = event['payload']['head']
+                        job_queue.append(sha)
+                        self.id_of_last_event_handled = event['id']
                     break
                 elif event['type'] == 'CreateEvent':
                     if event['payload']['ref_type'] == 'branch':
-                        branch = event['payload']['ref']
-                        sha = self._get_last_commit_on_branch(branch)
-                        job_queue.append(sha)
+                        if event['id'] != self.id_of_last_event_handled:
+                            branch = event['payload']['ref']
+                            sha = self._get_last_commit_on_branch(branch)
+                            job_queue.append(sha)
+                            self.id_of_last_event_handled = event['id']
                     break
             else:
                 print('No new commits')
