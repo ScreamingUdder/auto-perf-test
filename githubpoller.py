@@ -32,7 +32,8 @@ class GithubPoller:
         r = requests.get('https://api.github.com/repos/ScreamingUdder/mantid/events',
                          headers={'If-None-Match': self.e_tag},
                          auth=('matthew-d-jones', self.github_token))
-        self.e_tag = r.headers['ETag']
+        if r.status_code == 200:
+            self.e_tag = r.headers['ETag']
         return r
 
     def _request_branch_info(self, branch):
