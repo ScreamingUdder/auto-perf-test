@@ -16,7 +16,7 @@ class GithubPoller:
             for event in payload:
                 # Find a push event and find the last commit made
                 if event['type'] == 'PushEvent':
-                    sha = event['payload']['commits'][-1]['sha']
+                    sha = event['payload']['head']
                     job_queue.append(sha)
                     break
                 elif event['type'] == 'CreateEvent':
