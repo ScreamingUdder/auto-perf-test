@@ -10,3 +10,5 @@ dropbox
 websocket
 python-vagrant
 psutil
+flask
+mpld3

@@ -10,6 +10,8 @@ from transferdata import TransferData
 import shutil
 import websocket
 from githubpoller import GithubPoller
+from threading import Thread
+from flaskapp import app
 
 REPO_PATH = os.environ['MANTID_SRC_PATH']
 BUILD_PATH = os.environ['MANTID_BUILD_PATH']
@@ -71,11 +73,6 @@ def clear_build_directory():
             print(e)
 
 
-def plot_durations():
-    """Read durations from log and plot up to the last 100 values"""
-    pass
-
-
 def record_live_data_duration(sha):
     """Record MonitorLiveData duration in a log file and update it on dropbox"""
     # Get MonitorLiveData duration line from mantid.log
@@ -84,11 +81,10 @@ def record_live_data_duration(sha):
     duration_seconds = log_line[-2]
     # Append it to our duration log
     duration_filename = 'duration_log.txt'
-    with open(duration_filename, 'a') as duration_log:
-        duration_log.write('  '.join([timestamp_iso8601, duration_seconds, sha]) + '\n')
+    with open('flaskapp' + duration_filename, 'a') as duration_log:
+        duration_log.write(','.join([timestamp_iso8601, duration_seconds, sha]) + '\n')
     if os.path.isfile(duration_filename):
-        transfer_data.upload_file(duration_filename, duration_filename)
-    plot_durations()
+        transfer_data.upload_file('flaskapp' + duration_filename, duration_filename)
 
 
 def poll_for_process_end(process, logfile, status, current_job):
@@ -214,6 +210,10 @@ def parse_slack_output(slack_rtm_output):
 
 def main():
     if sc.rtm_connect():
+        # Start up the flask app
+        thread = Thread(target=app.run, kwargs={'debug': False})
+        thread.start()
+
         gp = GithubPoller(GITHUB_TOKEN)
         status = 'idle'
         job_queue = []
