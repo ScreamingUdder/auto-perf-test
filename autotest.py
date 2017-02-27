@@ -10,8 +10,6 @@ from transferdata import TransferData
 import shutil
 import websocket
 from githubpoller import GithubPoller
-from threading import Thread
-from flaskapp import app
 
 REPO_PATH = os.environ['MANTID_SRC_PATH']
 BUILD_PATH = os.environ['MANTID_BUILD_PATH']
@@ -211,8 +209,9 @@ def parse_slack_output(slack_rtm_output):
 def main():
     if sc.rtm_connect():
         # Start up the flask app
-        thread = Thread(target=app.run, kwargs={'debug': False})
-        thread.start()
+        my_env = os.environ.copy()
+        my_env["MPLBACKEND"] = "Agg"
+        subprocess.Popen(['python', 'app.py'], env=my_env)
 
         gp = GithubPoller(GITHUB_TOKEN)
         status = 'idle'
