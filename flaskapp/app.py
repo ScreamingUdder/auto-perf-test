@@ -12,7 +12,7 @@ app = Flask(__name__)
 @app.route("/")
 @app.route('/index')
 def main():
-    print os.getcwd()
+    # print os.getcwd()
     data = np.genfromtxt('flaskapp/duration_log.txt', delimiter=',', names=['timestamps', 'duration', 'sha'],
                          dtype=('|S19', float, '|S40'))
     if data['timestamps'].size < 2:
@@ -32,7 +32,6 @@ def main():
     tooltip = mpld3.plugins.PointLabelTooltip(time_plot, labels=data['sha'].tolist())
     mpld3.plugins.connect(fig, tooltip)
     duration_plot = mpld3.fig_to_html(fig, template_type="simple")
-    print duration_plot
 
     return render_template('index.html', plot=duration_plot)
 
