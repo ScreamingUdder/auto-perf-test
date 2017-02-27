@@ -79,10 +79,10 @@ def record_live_data_duration(sha):
     duration_seconds = log_line[-2]
     # Append it to our duration log
     duration_filename = 'duration_log.txt'
-    with open('flaskapp' + duration_filename, 'a') as duration_log:
+    with open(duration_filename, 'a') as duration_log:
         duration_log.write(','.join([timestamp_iso8601, duration_seconds, sha]) + '\n')
     if os.path.isfile(duration_filename):
-        transfer_data.upload_file('flaskapp' + duration_filename, duration_filename)
+        transfer_data.upload_file(duration_filename, duration_filename)
 
 
 def poll_for_process_end(process, logfile, status, current_job):
@@ -211,7 +211,7 @@ def main():
         # Start up the flask app
         my_env = os.environ.copy()
         my_env["MPLBACKEND"] = "Agg"
-        subprocess.Popen(['python', 'app.py'], env=my_env)
+        subprocess.Popen(['python', 'flaskapp/app.py'], env=my_env)
 
         gp = GithubPoller(GITHUB_TOKEN)
         status = 'idle'
