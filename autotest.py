@@ -71,6 +71,26 @@ def clear_build_directory():
             print(e)
 
 
+def plot_durations():
+    """Read durations from log and plot up to the last 100 values"""
+    pass
+
+
+def record_live_data_duration(sha):
+    """Record MonitorLiveData duration in a log file and update it on dropbox"""
+    # Get MonitorLiveData duration line from mantid.log
+    log_line = subprocess.check_output(['tail', '-1', '/root/.mantid/mantid.log']).split()
+    timestamp_iso8601 = log_line[0] + 'T' + log_line[1].split(',')[0]
+    duration_seconds = log_line[-2]
+    # Append it to our duration log
+    duration_filename = 'duration_log.txt'
+    with open(duration_filename, 'a') as duration_log:
+        duration_log.write('  '.join([timestamp_iso8601, duration_seconds, sha]) + '\n')
+    if os.path.isfile(duration_filename):
+        transfer_data.upload_file(duration_filename, duration_filename)
+    plot_durations()
+
+
 def poll_for_process_end(process, logfile, status, current_job):
     """Returns True if process ended"""
     if status != 'idle':
@@ -87,6 +107,7 @@ def poll_for_process_end(process, logfile, status, current_job):
                     'Completed build and test for https://api.github.com/repos/ScreamingUdder/mantid/commits/' +
                     current_job.sha + '\nOutput files are available here: ' + transfer_data.get_link(
                         current_job.output_directory))
+                record_live_data_duration(current_job.sha)
     return process, logfile, status
 
 
