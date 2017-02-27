@@ -13,7 +13,9 @@ app = Flask(__name__)
 @app.route('/index')
 def main():
     # print os.getcwd()
-    data = np.genfromtxt('flaskapp/duration_log.txt', delimiter=',', names=['timestamps', 'duration', 'sha'],
+    if not os.path.isfile('duration_log.txt'):
+        return render_template('index.html', plot='Insufficient data points to plot')
+    data = np.genfromtxt('duration_log.txt', delimiter=',', names=['timestamps', 'duration', 'sha'],
                          dtype=('|S19', float, '|S40'))
     if data['timestamps'].size < 2:
         return render_template('index.html', plot='Insufficient data points to plot')
