@@ -31,7 +31,7 @@ def main():
 
     ax.set_title("MonitorLiveData duration - Performance test log", size=16)
 
-    tooltip = mpld3.plugins.PointLabelTooltip(time_plot, labels=data['sha'].tolist())
+    tooltip = mpld3.plugins.PointHTMLTooltip(time_plot[0], labels=data['sha'].tolist())
     mpld3.plugins.connect(fig, tooltip)
     duration_plot = mpld3.fig_to_html(fig, template_type="simple")
 
