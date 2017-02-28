@@ -82,7 +82,7 @@ def record_live_data_duration(sha):
     with open(duration_filename, 'a') as duration_log:
         duration_log.write(','.join([timestamp_iso8601, duration_seconds, sha]) + '\n')
     if os.path.isfile(duration_filename):
-        transfer_data.upload_file(duration_filename, '/' + duration_filename)
+        transfer_data.overwrite_file(duration_filename, '/' + duration_filename)
 
 
 def poll_for_process_end(process, logfile, status, current_job):
