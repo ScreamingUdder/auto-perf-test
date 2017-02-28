@@ -77,6 +77,8 @@ def record_live_data_duration(sha):
     log_line = subprocess.check_output(['tail', '-1', '/root/.mantid/mantid.log']).split()
     timestamp_iso8601 = log_line[0] + 'T' + log_line[1].split(',')[0]
     duration_seconds = log_line[-2]
+    if log_line[-3] == 'minutes':
+        duration_seconds = str(float(duration_seconds) + 60 * float(log_line[-4]))
     # Append it to our duration log
     duration_filename = 'duration_log.txt'
     with open(duration_filename, 'a') as duration_log:
