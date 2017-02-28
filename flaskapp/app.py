@@ -26,7 +26,7 @@ def main():
 
     xfmt = dates.DateFormatter('%H:%M:%S:%f')
     ax.xaxis.set_major_formatter(xfmt)
-    time_plot = ax.plot(datetimes, data['duration'])
+    time_plot = ax.plot(datetimes, data['duration'], '--bo')
     ax.grid(color='white', linestyle='solid')
 
     ax.set_title("MonitorLiveData duration - Performance test log", size=16)
