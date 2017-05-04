@@ -30,14 +30,16 @@ class MantidKafkaPerfTest:
         self._res_check = resourcechecker.ResourceChecker()
 
     def run(self):
-        self._start_kafka_monitor()
+        #self._start_kafka_monitor()
         self._res_check.start()
         # Give the monitor a couple of seconds to start logging
         time.sleep(2)
         self._start_live()
         self._wait_live()
-        self._plot_kafka_metrics()
+        #self._plot_kafka_metrics()
         self._plot_system_metrics()
+        outws = api.AnalysisDataService.retrieve(self.outputWs)
+        print outws.getNEvents
 
     def _start_live(self):
         """
