@@ -71,5 +71,5 @@ class MantidKafkaPerfTest:
         plot_figure.savefig("mantid_bytes_out_vs_time.svg")
 
 if __name__ == "__main__":
-    perftest = MantidKafkaPerfTest(instrument_name="manytestdata")
+    perftest = MantidKafkaPerfTest(instrument_name="multiparttest")
     perftest.run()
